@@ -1,0 +1,12 @@
+Start Training:
+Iter: 0, Loss: 8.19690e-01, Loss_0: 2.67601e-01, Loss_b: 1.00754e-01, Loss_f: 4.51334e-01
+Iter: 100, Loss: 6.83762e-03, Loss_0: 6.42582e-03, Loss_b: 2.25141e-05, Loss_f: 3.89279e-04
+Iter: 200, Loss: 5.99742e-03, Loss_0: 5.24054e-03, Loss_b: 3.10688e-05, Loss_f: 7.25807e-04
+Iter: 300, Loss: 4.99473e-03, Loss_0: 4.02537e-03, Loss_b: 1.58107e-05, Loss_f: 9.53552e-04
+Iter: 400, Loss: 3.82283e-03, Loss_0: 3.13614e-03, Loss_b: 2.28593e-05, Loss_f: 6.63828e-04
+Iter: 500, Loss: 3.17526e-03, Loss_0: 2.68137e-03, Loss_b: 3.10442e-05, Loss_f: 4.62846e-04
+Iter: 600, Loss: 2.47329e-03, Loss_0: 2.26456e-03, Loss_b: 7.13871e-06, Loss_f: 2.01591e-04
+Iter: 700, Loss: 1.80213e-03, Loss_0: 1.34078e-03, Loss_b: 4.16143e-05, Loss_f: 4.19738e-04
+Iter: 800, Loss: 1.48070e-03, Loss_0: 1.01367e-03, Loss_b: 2.88919e-05, Loss_f: 4.38140e-04
+Iter: 900, Loss: 1.05848e-03, Loss_0: 7.78607e-04, Loss_b: 4.87499e-06, Loss_f: 2.75000e-04
+Training time: 104.5034

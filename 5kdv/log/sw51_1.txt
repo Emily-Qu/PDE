@@ -1,0 +1,2 @@
+Start Training:
+Iter: 0, Loss: 3.10900e-02, Loss0: 1.97395e-02, Loss_b: 2.59642e-03, Loss_f: 8.75412e-03, Loss_prev: 0.00000e+00

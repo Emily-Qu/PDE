@@ -1,0 +1,7 @@
+Start Training:
+Iter: 0, Loss: 4.35515e-01, Loss_0: 4.28420e-02, Loss_b: 3.34349e-01, Loss_f: 5.83240e-02
+Iter: 100, Loss: 1.87512e-02, Loss_0: 1.85603e-02, Loss_b: 9.10671e-06, Loss_f: 1.81800e-04
+Iter: 200, Loss: 1.05382e-02, Loss_0: 1.02183e-02, Loss_b: 1.60510e-05, Loss_f: 3.03803e-04
+Iter: 300, Loss: 6.06230e-03, Loss_0: 5.56464e-03, Loss_b: 5.66273e-05, Loss_f: 4.41031e-04
+Iter: 400, Loss: 3.21363e-03, Loss_0: 2.53187e-03, Loss_b: 1.54511e-05, Loss_f: 6.66304e-04
+Iter: 500, Loss: 2.22287e-03, Loss_0: 1.67617e-03, Loss_b: 4.90102e-06, Loss_f: 5.41804e-04

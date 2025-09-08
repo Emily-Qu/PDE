@@ -1,0 +1,329 @@
+import os
+current_dir = os.path.dirname(os.path.abspath(__file__))
+def make_folder(folder_name):
+    folder_path = os.path.join(current_dir, folder_name)
+    if not os.path.exists(folder_path):
+        os.makedirs(folder_path)
+make_folder('data')     # 创建文件夹用于保存文件
+make_folder('log')
+make_folder('model')
+make_folder('png')
+import warnings
+warnings.filterwarnings('ignore')
+import torch
+if torch.cuda.is_available():   # 设置设备名称
+    device = torch.device('cuda')
+else:
+    device = torch.device('cpu')
+import scipy.io
+import numpy as np
+np.random.seed(1234)
+from pyDOE import lhs
+from collections import OrderedDict
+import time
+from scipy.interpolate import griddata
+import matplotlib.pyplot as plt
+import matplotlib.gridspec as gridspec
+from mpl_toolkits.axes_grid1 import make_axes_locatable
+
+
+# In one space dimension, the Burger’s equation along with Dirichlet boundary conditions reads as
+#     u_t + u u_x - (0.01/pi) u_xx = 0,       x in [-1, 1], t in [0, 1]
+
+#     u(0,x)=-sin(pi x)
+#     u(t,-1)=u(t,1)=0
+# Let us define f(t, x) to be given by
+#     f := u_t + u u_x - (0.01/pi) u_xx,
+# and proceed by approximating u(t, x) by a deep neural network.
+
+
+class Scale(torch.nn.Module):
+    def __init__(self, lb, ub):
+        super(Scale, self).__init__()
+        self.lb = torch.tensor(lb).float().to(device)
+        self.ub = torch.tensor(ub).float().to(device)
+    def forward(self, X):
+        H = 2.0*(X - self.lb)/(self.ub - self.lb) - 1.0
+        return H
+
+class DNN(torch.nn.Module):
+    def __init__(self, layers):
+        super(DNN, self).__init__()
+        self.depth = len(layers) - 1
+        self.activation = torch.nn.Tanh
+        layer_list = list()
+        for i in range(self.depth - 1): 
+            layer_list.append(
+                ('layer_%d' % i, torch.nn.Linear(layers[i], layers[i+1]))
+            )
+            layer_list.append(('activation_%d' % i, self.activation()))
+        layer_list.append(
+            ('layer_%d' % (self.depth - 1), torch.nn.Linear(layers[-2], layers[-1]))
+        )
+        layerDict = OrderedDict(layer_list)
+        self.layers = torch.nn.Sequential(layerDict)
+    def forward(self, x):
+        out = self.layers(x)
+        return out
+
+class FileWriter:
+    def __init__(self, logfilename):
+        self.file_path = os.path.join(current_dir, 'log', logfilename)
+    def write(self, content, mode='a'):
+        with open(self.file_path, mode, encoding='utf-8') as file:
+            file.write(content + '\n')
+
+def xavier(m):
+    if isinstance(m, torch.nn.Linear):
+        torch.nn.init.xavier_normal_(m.weight)
+        if m.bias is not None:
+            torch.nn.init.zeros_(m.bias)
+
+class PhysicsInformedNN():
+    def __init__(self, layers, lb, ub):
+        self.lb = torch.tensor(lb).float().to(device)
+        self.ub = torch.tensor(ub).float().to(device)
+        self.dnn = torch.nn.Sequential(Scale(lb, ub), DNN(layers)).to(device)
+        self.dnn.apply(xavier)
+    
+    def set_training_data(self, x0, u0, tb, Xf, nu):
+        # 对于不同的问题，修改这里
+        self.x0 = torch.tensor(x0).float().to(device)
+        self.u0 = torch.tensor(u0).float().to(device)
+        self.tb = torch.tensor(tb).float().to(device)
+        self.xf = torch.tensor(Xf[:, 0:1], requires_grad=True).float().to(device)
+        self.tf = torch.tensor(Xf[:, 1:2], requires_grad=True).float().to(device)
+        self.nu = torch.tensor(nu).float().to(device)
+
+        self.x_lb = torch.tensor(0*tb + lb[0]).float().to(device)
+        self.x_ub = torch.tensor(0*tb + ub[0]).float().to(device)
+        self.t0 = torch.tensor(0*x0).float().to(device)
+    
+    def backward(self):
+        # 对于不同的问题，修改这里
+        u0_pred = self.dnn(torch.concat([self.x0, self.t0], dim=1))
+        loss0 = torch.mean(torch.square(u0_pred - self.u0))
+
+        u_lb_pred = self.dnn(torch.concat([self.x_lb, self.tb], dim=1))
+        u_ub_pred = self.dnn(torch.concat([self.x_ub, self.tb], dim=1))
+        loss_b = torch.mean(torch.square(u_lb_pred)) + torch.mean(torch.square(u_ub_pred))
+
+        f_u = self.net_f(self.xf, self.tf)
+        loss_f = torch.mean(torch.square(f_u))
+
+        loss = loss0 + loss_b + loss_f
+        loss.backward()
+
+        if self.iter % 100 == 0:
+            # 记录信息的格式可能也要改
+            message = 'Iter: %d, Loss: %.5e, Loss_0: %.5e, Loss_b: %.5e, Loss_f: %.5e' % (self.iter, loss.item(), loss0.item(), loss_b.item(), loss_f.item())
+            if self.logfilename is not None:
+                self.writer.write(message)
+            print(message)
+        self.iter += 1
+        return loss
+
+    def net_f(self, x, t):  # 在backward中调用
+        u = self.dnn(torch.concat([x, t], dim=1))
+        u_x = torch.autograd.grad(u, x, grad_outputs=torch.ones_like(u), retain_graph=True, create_graph=True)[0]
+        u_xx = torch.autograd.grad(u_x, x, grad_outputs=torch.ones_like(u_x), retain_graph=True, create_graph=True)[0]
+        u_t = torch.autograd.grad(u, t, grad_outputs=torch.ones_like(u), retain_graph=True, create_graph=True)[0]
+        return u_t + u * u_x - self.nu * u_xx
+
+
+    def train(self, nIter, logfilename=None, init_iter=0, LBFGS_max_iter=50000): # 固定格式，不用修改
+        self.dnn.train()
+        self.iter = init_iter
+        self.optimizer_Adam = torch.optim.Adam(self.dnn.parameters())
+        self.optimizer_LBFGS = torch.optim.LBFGS(
+            self.dnn.parameters(), 
+            lr=1.0, 
+            max_iter=LBFGS_max_iter, 
+            max_eval=50000, 
+            history_size=50,
+            tolerance_grad=1e-5, 
+            tolerance_change=1.0 * np.finfo(float).eps,
+            line_search_fn="strong_wolfe"
+        )
+        self.logfilename = logfilename
+        if self.logfilename is not None:
+            self.writer = FileWriter(logfilename)
+            self.writer.write("Start Training:", mode='w')
+        start_time = time.time()
+        for _ in range(nIter):
+            self.optimizer_Adam.zero_grad()
+            self.backward()
+            self.optimizer_Adam.step()
+        def LBFGS_callback():
+            self.optimizer_LBFGS.zero_grad()
+            return self.backward()
+        self.optimizer_LBFGS.step(LBFGS_callback)
+        elapsed = time.time() - start_time
+        if self.logfilename is not None:
+            self.writer.write('Training time: %.4f' % (elapsed))
+        print('Training time: %.4f' % (elapsed))
+
+    def load_model(self, filename): # 固定格式，不用修改
+        if filename is not None:
+            load_path = os.path.join(current_dir, 'model', filename)
+            self.dnn.load_state_dict(torch.load(load_path))
+            print(f"Model parameters loaded from {load_path}.")
+
+    def save_model(self, filename): # 固定格式，不用修改
+        if filename is not None:
+            save_path = os.path.join(current_dir, 'model', filename)
+            torch.save(self.dnn.state_dict(), save_path)
+            print(f"Model parameters saved to {save_path}.")      
+
+    def predict(self, X_star): # 一般不改
+        X_star = torch.tensor(X_star).float().to(device)
+        self.dnn.eval()
+        u_star = self.dnn(X_star)
+        u_star = u_star.detach().cpu().numpy()
+        return u_star
+
+
+if __name__ == "__main__":
+    # 对于不同的问题，只需要更改准备训练数据部分，以及set_training_data，backward 函数
+    # 如果是多输出的问题，可能还要改 predict 函数（对于burgers，它只有一维的输出）
+
+    #############################################
+    ############## 准备训练数据 ##################
+    #############################################
+
+    data = scipy.io.loadmat(os.path.join(current_dir, 'data', 'burgers256*100.mat'))
+    t = data['t'].flatten()[:,None]     # (T, 1) = (100, 1)
+    x = data['x'].flatten()[:,None]     # (X, 1) = (256, 1)
+    Exact = np.real(data['usol']).T     # (T, X)
+
+    X, T = np.meshgrid(x, t)            # (T, X)
+    X_star = np.hstack((X.flatten()[:,None], T.flatten()[:,None]))  # (T*X, 2)
+    u_star = Exact.flatten()[:,None]                                # (T*X, 1)
+    
+    lb = X_star.min(0)          # [-1, 0]       lb: lower boundary
+    ub = X_star.max(0)          # [1, 0.99]     ub: upper boundary
+
+    nu = 0.01/np.pi
+    N0 = 50                             # t=0上的配点个数
+    Nb = 50                             # x=-1和x=1上的配点个数
+    Nf = 10000                          # 区域内的配点个数
+    layers = [2, 50, 50, 50, 50, 1]
+
+    x0 = X[0:1, :].T                            # (X, 1)
+    u0 = Exact[0:1, :].T                        # (X, 1)
+    idx = np.random.choice(x0.shape[0], N0, replace=False)      # (N0,)
+    x0 = x0[idx, :]                             # (N0, 1)
+    u0 = u0[idx, :]                             # (N0, 1)
+    print(u0.shape)
+    print(x0.shape)
+
+    idt = np.random.choice(t.shape[0], Nb, replace=False)      # (Nb,)
+    tb = t[idt, :]                              # (Nb, 1)
+
+    Xf = lb + (ub-lb)*lhs(2, Nf)                # (Nf, 2)
+
+    # # 定义PINN模型
+    model = PhysicsInformedNN(layers, lb, ub)
+
+    #############################################
+    ########## 需要读取模型时取消注释 #############
+    #############################################
+
+    model_name = "model_50,50,10000,4x50.pth"
+    model.load_model(model_name)
+
+
+    #############################################
+    ############# 训练模型时取消注释 #############
+    #############################################
+
+    logfilename = "log.txt"
+    model.set_training_data(x0, u0, tb, Xf, nu)
+    model.train(50000, logfilename)
+    model_name = "model_50,50,10000,4x50.pth"
+    model.save_model(model_name)
+
+
+    #############################################
+    ############# 测试模型时取消注释 #############
+    #############################################
+
+    model_name = "model_50,50,10000,4x50.pth"
+    model.load_model(model_name)
+
+    u_pred = model.predict(X_star)      # (T*X, 1)
+    error_u = np.linalg.norm(u_star-u_pred,2)/np.linalg.norm(u_star,2)  # L2 error
+    print('Error u: %e' % (error_u))
+
+    U_pred = griddata(X_star, u_pred.flatten(), (X, T), method='cubic')
+    Error = np.abs(Exact - U_pred)
+
+    # #####################################################################
+    # ############################ Plotting ###############################
+    # #####################################################################
+
+    X0 = np.concatenate([x0, 0*x0], axis=1)
+    X_lb = np.concatenate([0*tb + lb[0], tb], axis=1)
+    X_ub = np.concatenate([0*tb + ub[0], tb], axis=1)
+    X_boundary = np.vstack([X0, X_lb, X_ub])
+
+    ################## Row 0: u(t,x) ##################
+    fig = plt.gcf()
+    gs0 = gridspec.GridSpec(1, 2)
+    gs0.update(top=1-0.06, bottom=1-1/3, left=0.15, right=0.85, wspace=0)
+    ax = plt.subplot(gs0[:, :])
+    h = ax.imshow(U_pred.T, interpolation='nearest', cmap='rainbow', 
+                  extent=[t.min(), t.max(), x.min(), x.max()], 
+                  origin='lower', aspect='auto')
+    divider = make_axes_locatable(ax)
+    cax = divider.append_axes("right", size="5%", pad=0.05)
+    fig.colorbar(h, cax=cax)
+    ax.plot(X_boundary[:,1], X_boundary[:,0], 'kx', label = 'Data (%d points)' % (X_boundary.shape[0]), markersize = 4, clip_on = False)
+
+    line = np.linspace(x.min(), x.max(), 2)[:,None]
+    ax.plot(t[25]*np.ones((2,1)), line, 'w-', linewidth = 1)
+    ax.plot(t[50]*np.ones((2,1)), line, 'w-', linewidth = 1)
+    ax.plot(t[75]*np.ones((2,1)), line, 'w-', linewidth = 1) 
+
+    ax.set_xlabel('$t$')
+    ax.set_ylabel('$x$')
+    ax.legend(frameon=False, loc = 'best')
+    ax.set_title('$pred\ u(t,x)$', fontsize = 10)
+
+    ################# Row 1: u(t,x) slices ##################
+    gs1 = gridspec.GridSpec(1, 3)
+    gs1.update(top=1-1/3, bottom=0, left=0.1, right=0.9, wspace=0.5)
+    ax = plt.subplot(gs1[0, 0])
+    ax.plot(x, Exact[25,:], 'b-', linewidth = 2, label = 'Exact')
+    ax.plot(x, U_pred[25,:], 'r--', linewidth = 2, label = 'Prediction')
+    ax.set_xlabel('$x$')
+    ax.set_ylabel('$u(t,x)$')
+    ax.set_title('$t = 0.25$', fontsize = 10)
+    ax.axis('square')
+    ax.set_xlim([-1.1,1.1])
+    ax.set_ylim([-1.1,1.1])
+
+    ax = plt.subplot(gs1[0, 1])
+    ax.plot(x,Exact[50,:], 'b-', linewidth = 2, label = 'Exact')       
+    ax.plot(x,U_pred[50,:], 'r--', linewidth = 2, label = 'Prediction')
+    ax.set_xlabel('$x$')
+    ax.set_ylabel('$u(t,x)$')
+    ax.axis('square')
+    ax.set_xlim([-1.1,1.1])
+    ax.set_ylim([-1.1,1.1])
+    ax.set_title('$t = 0.50$', fontsize = 10)
+    ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.35), ncol=5, frameon=False)
+
+    ax = plt.subplot(gs1[0, 2])
+    ax.plot(x,Exact[75,:], 'b-', linewidth = 2, label = 'Exact')       
+    ax.plot(x,U_pred[75,:], 'r--', linewidth = 2, label = 'Prediction')
+    ax.set_xlabel('$x$')
+    ax.set_ylabel('$u(t,x)$')
+    ax.axis('square')
+    ax.set_xlim([-1.1,1.1])
+    ax.set_ylim([-1.1,1.1])    
+    ax.set_title('$t = 0.75$', fontsize = 10)
+
+    fig.savefig(os.path.join(current_dir, 'png', 'test_50,50,10000,4x50.png'))
+    plt.show()
+

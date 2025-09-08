@@ -1,0 +1,8 @@
+Start Training:
+Iter: 0, Loss: 1.19715e+01, Loss_0: 1.19715e+01, Loss_b: 1.24015e-05, Loss_f: 2.32666e-07
+Iter: 100, Loss: 8.10483e+00, Loss_0: 8.10477e+00, Loss_b: 5.67353e-05, Loss_f: 1.19539e-07
+Iter: 200, Loss: 8.10233e+00, Loss_0: 8.10185e+00, Loss_b: 4.76858e-04, Loss_f: 1.57286e-07
+Iter: 300, Loss: 8.09866e+00, Loss_0: 8.09638e+00, Loss_b: 2.27868e-03, Loss_f: 1.21901e-07
+Iter: 400, Loss: 8.09465e+00, Loss_0: 8.08745e+00, Loss_b: 7.19905e-03, Loss_f: 4.46176e-08
+Iter: 500, Loss: 8.09028e+00, Loss_0: 8.07758e+00, Loss_b: 1.26901e-02, Loss_f: 9.30382e-06
+Iter: 600, Loss: 8.07913e+00, Loss_0: 8.05960e+00, Loss_b: 1.93032e-02, Loss_f: 2.27778e-04

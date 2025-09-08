@@ -1,0 +1,20 @@
+Start Training:
+Iter: 0, Loss: 2.10746e-02, Loss_0: 1.56474e-02, Loss_b: 1.19279e-04, Loss_f: 5.30793e-03
+Iter: 100, Loss: 3.18748e-03, Loss_0: 3.13939e-03, Loss_b: 2.03924e-05, Loss_f: 2.77004e-05
+Iter: 200, Loss: 2.80594e-03, Loss_0: 2.74941e-03, Loss_b: 2.27053e-05, Loss_f: 3.38309e-05
+Iter: 300, Loss: 2.43668e-03, Loss_0: 2.34454e-03, Loss_b: 2.53818e-05, Loss_f: 6.67584e-05
+Iter: 400, Loss: 2.39462e-03, Loss_0: 2.12852e-03, Loss_b: 1.77998e-04, Loss_f: 8.81043e-05
+Iter: 500, Loss: 1.93638e-03, Loss_0: 1.83177e-03, Loss_b: 1.15254e-05, Loss_f: 9.30846e-05
+Iter: 600, Loss: 1.79593e-03, Loss_0: 1.70340e-03, Loss_b: 1.74840e-05, Loss_f: 7.50390e-05
+Iter: 700, Loss: 1.62978e-03, Loss_0: 1.55777e-03, Loss_b: 2.65323e-06, Loss_f: 6.93564e-05
+Iter: 800, Loss: 1.53403e-03, Loss_0: 1.42915e-03, Loss_b: 5.43393e-05, Loss_f: 5.05456e-05
+Iter: 900, Loss: 1.36421e-03, Loss_0: 1.31981e-03, Loss_b: 6.30767e-06, Loss_f: 3.80908e-05
+Iter: 1000, Loss: 1.15476e-03, Loss_0: 1.11117e-03, Loss_b: 8.77844e-06, Loss_f: 3.48143e-05
+Iter: 1100, Loss: 1.12154e-03, Loss_0: 8.35663e-04, Loss_b: 2.58612e-04, Loss_f: 2.72677e-05
+Iter: 1200, Loss: 6.72345e-04, Loss_0: 5.99517e-04, Loss_b: 4.69219e-06, Loss_f: 6.81357e-05
+Iter: 1300, Loss: 5.68605e-04, Loss_0: 4.68208e-04, Loss_b: 2.26647e-06, Loss_f: 9.81303e-05
+Iter: 1400, Loss: 8.65943e-04, Loss_0: 4.46083e-04, Loss_b: 3.01490e-04, Loss_f: 1.18370e-04
+Iter: 1500, Loss: 4.85334e-04, Loss_0: 3.83134e-04, Loss_b: 1.75951e-06, Loss_f: 1.00440e-04
+Iter: 1600, Loss: 4.51673e-04, Loss_0: 3.49646e-04, Loss_b: 1.60952e-06, Loss_f: 1.00418e-04
+Iter: 1700, Loss: 4.21189e-04, Loss_0: 3.20967e-04, Loss_b: 1.69552e-06, Loss_f: 9.85266e-05
+Iter: 1800, Loss: 4.06355e-04, Loss_0: 3.09820e-04, Loss_b: 2.21405e-06, Loss_f: 9.43211e-05

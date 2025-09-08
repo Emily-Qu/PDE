@@ -1,0 +1,166 @@
+PINN for 5kdv(1-soliton):
+Error u: 6.165060e-02(边界为0)
+Error u: 1.590559e-02   (原论文4.47e−02)  (加宽空间边界)
+Error u: 2.446954e-02 时间[-2,2]
+Error u: 2.968154e-02
+
+
+bcPINN for 5kdv(1-soliton):
+Error u: 3.692838e-02（tensorflow）
+Error u: 3.392451e-02（torch）
+Error u: 6.776367e-03 时间[-2,2]
+
+
+
+swPINN for 5kdv(1-soliton)
+Overall Error u: 6.453994e-03
+Overall Error u: 1.605627e-03（adamw）
+
+
+PINN for 5kdv(2-soliton)
+Error u: 5.942715e-01 
+Error u: 4.272328e-02 (k1=1.k2=0.9)
+Error u: 1.715121e-02 (k1=1,k2=1.4);空间取[-15,15],时间[0,2]
+Error u: 2.562956e-01  时间[-2,2]
+Error u: 3.307947e-01 [-0.5,1][-10,15]
+
+
+
+bcPINN for 5kdv(2-soliton):
+Error u: 4.831953e-02 (k1=1.k2=0.9)
+Error u: 4.376599e-02 (k1=1.k2=0.9)
+Error u: 3.992239e-02 (k1=1.k2=0.9)
+Error u: 7.562859e-03 (k1=1,k2=1.4)
+Error u: 2.254630e-02 时间[-2,2]
+Error u: 1.096651e-02[-0.5,0.5]
+Error u: 1.340673e-02[-0.5,1][-10,15]
+
+
+swPINN for 5kdv(2-soliton)
+Overall Error u: 4.975236e-02
+Overall Error u: 2.316293e-03[-0.5,0.5]
+Overall Error u: 2.667022e-03[-0.5,1][-10,15]
+Overall Error u: 5.348577e-03(adamW)
+
+
+PINN for 5kdv(3-soliton)
+Error u: 1.319584e-01
+Error u: 2.495779e-01[-0.5,1][-15,20]
+
+
+
+
+bcPINN for 5kdv(3-soliton)
+Error u: 7.734769e-02
+Error u: 3.208349e-02
+Error u: 4.021908e-02[-0.5,0.5]
+Error u: 1.773402e-02[-0.5,1][-10,15]
+
+
+swPINN for 5kdv(3-soliton)
+Overall Error u: 7.544498e-02
+Overall Error u: 5.437088e-03[-0.5,0.5]
+Overall Error u: 6.384427e-03[-0.5,1][-10,15]
+Overall Error u: 2.251280e-03(adamW)
+
+
+
+PINN for 7kdv(1-soliton):
+Error u: 4.639246e-02
+Error u: 3.466298e-03 （原论文3.29e−03）（加宽空间边界）
+Error u: 8.318636e-03 时间[-2,2]
+
+
+bcPINN for 7kdv(1-soliton):
+Error u: 3.390361e-02
+Error u: 2.456339e-03
+Error u: 9.191860e-03 时间[-2,2]
+
+
+
+swPINN for 7kdv(1-soliton):
+Overall Error u: 1.345221e-03
+
+
+PINN for 7kdv(2-soliton):
+Error u: 3.194267e-01(k1=1.k2=0.9)
+Error u: 2.449665e-01(k1=1,k2=1.4)空间取[-20,20],时间[0,2]
+Error u: 2.568306e-01
+
+bcPINN for 7kdv(2-soliton):
+Error u: 3.188376e-01(k1=1.k2=0.9)
+Error u: 1.347326e-01
+
+swPINN for 7kdv(2-soliton):
+Overall Error u: 1.396397e-01
+Overall Error u: 4.145918e-02,时间[-0.5,0.5]
+Overall Error u: 6.639045e-02(adamW)
+
+
+
+PINN for 7kdv(3-soliton):
+Error u: 3.743270e-01
+
+bcPINN for 7kdv(3-soliton):
+Error u: 1.068929e-01
+
+
+
+swPINN for 7kdv(3-soliton):
+Overall Error u: 3.223475e-02
+Overall Error u: 4.639767e-02(adamW)
+
+
+PINN for GNSS (0.1+0)
+t=[-1,1]
+Error u: 2.463006e-02
+Error v: 1.505783e-02
+Error h: 5.307410e-03
+t=[-2,2]
+Error u: 1.276574e+00
+Error v: 1.091059e+00
+Error h: 4.711725e-01
+
+
+swPINN for GNSS(0.1+0)
+t=[-1,1]
+Overall Error u: 6.814769e-03
+Overall Error v: 4.377890e-03
+Overall Error h: 1.957910e-03
+
+
+t=[-2,2]
+Overall Error u: 2.898301e-01
+Overall Error v: 2.740116e-01
+Overall Error h: 7.935562e-02
+
+
+
+
+
+
+
+
+
+
+
+
+PINN for CH(1-soliton)
+Error u: 4.899153e-01
+
+
+bcPINN for CH(1-soliton)
+Error u: 4.896724e-01
+
+
+swtest-NLS（原始）：
+Overall Error u: 3.800507e-03
+Overall Error v: 9.990702e-03
+Overall Error h: 4.749924e-03
+
+
+
+
+Overall Error u: 4.302552e-03
+Overall Error v: 1.072379e-02
+Overall Error h: 5.136611e-03
